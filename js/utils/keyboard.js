@@ -176,7 +176,7 @@ function keyboardShow(element, elementTop, elementBottom, viewportHeight, keyboa
   // any showing part of the document that isn't within the scroll the user
   // could touchmove and cause some ugly changes to the app, so disable
   // any touchmove events while the keyboard is open using e.preventDefault()
-  document.addEventListener('touchmove', keyboardPreventDefault, false);
+  // document.addEventListener('touchmove', keyboardPreventDefault, false);
 
   return details;
 }
@@ -200,7 +200,7 @@ function keyboardHide() {
   });
 
   // the keyboard is gone now, remove the touchmove that disables native scroll
-  document.removeEventListener('touchmove', keyboardPreventDefault);
+  // document.removeEventListener('touchmove', keyboardPreventDefault);
   document.removeEventListener('keydown', keyboardOnKeyDown);
 }
 
