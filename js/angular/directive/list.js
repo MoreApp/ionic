@@ -65,6 +65,7 @@
 *
 * @param {string=} delegate-handle The handle used to identify this list with
 * {@link ionic.service:$ionicListDelegate}.
+* @param type {string=} The type of list to use (for example, list-inset for an inset list)
 * @param show-delete {boolean=} Whether the delete buttons for the items in the list are
 * currently shown or hidden.
 * @param show-reorder {boolean=} Whether the reorder buttons for the items in the list are
@@ -83,7 +84,8 @@ function($animate, $timeout) {
     controller: '$ionicList',
     compile: function($element, $attr) {
       var listEl = jqLite('<div class="list">')
-      .append( $element.contents() );
+      .append( $element.contents() )
+      .addClass($attr.type);
       $element.append(listEl);
 
       return function($scope, $element, $attrs, ctrls) {
@@ -140,13 +142,13 @@ function($animate, $timeout) {
             if (isShown) listCtrl.closeOptionButtons();
             listCtrl.canSwipeItems(!isShown);
 
-            var deleteButton = jqLite($element[0].getElementsByClassName('item-delete'));
-
             $element.children().toggleClass('list-left-editing', isShown);
-            toggleNgHide(deleteButton, isShown);
-
             $element.toggleClass('disable-pointer-events', isShown);
+
+            var deleteButton = jqLite($element[0].getElementsByClassName('item-delete'));
+            setButtonShown(deleteButton, listCtrl.showDelete);
           });
+
           $scope.$watch(function() {
             return listCtrl.showReorder();
           }, function(isShown, wasShown) {
@@ -156,21 +158,17 @@ function($animate, $timeout) {
             if (isShown) listCtrl.closeOptionButtons();
             listCtrl.canSwipeItems(!isShown);
 
-            var reorderButton = jqLite($element[0].getElementsByClassName('item-reorder'));
-
             $element.children().toggleClass('list-right-editing', isShown);
-            toggleNgHide(reorderButton, isShown);
-
             $element.toggleClass('disable-pointer-events', isShown);
+
+            var reorderButton = jqLite($element[0].getElementsByClassName('item-reorder'));
+            setButtonShown(reorderButton, listCtrl.showReorder);
           });
 
-          function toggleNgHide(element, shouldShow) {
-            forEach(element, function(node) {
-              if (shouldShow) {
-                $animate.removeClass(jqLite(node), 'ng-hide');
-              } else {
-                $animate.addClass(jqLite(node), 'ng-hide');
-              }
+          function setButtonShown(el, shown) {
+            shown() && el.addClass('visible') || el.removeClass('active');
+            ionic.requestAnimationFrame(function() {
+              shown() && el.addClass('active') || el.removeClass('invisible');
             });
           }
         }
