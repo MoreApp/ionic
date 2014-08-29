@@ -1,6 +1,8 @@
 
 var LOADING_TPL =
-  '<div class="loading">' +
+  '<div class="loading-container">' +
+    '<div class="loading">' +
+    '</div>' +
   '</div>';
 
 var LOADING_HIDE_DEPRECATED = '$ionicLoading instance.hide() has been deprecated. Use $ionicLoading.hide().';
@@ -30,9 +32,33 @@ var LOADING_SET_DEPRECATED = '$ionicLoading instance.setContent() has been depre
  * });
  * ```
  */
+/**
+ * @ngdoc object
+ * @name $ionicLoadingConfig
+ * @module ionic
+ * @description
+ * Set the default options to be passed to the {@link ionic.service:$ionicLoading} service.
+ *
+ * @usage
+ * ```js
+ * var app = angular.module('myApp', ['ionic'])
+ * app.constant('$ionicLoadingConfig', {
+ *   template: 'Default Loading Template...'
+ * });
+ * app.controller('AppCtrl', function($scope, $ionicLoading) {
+ *   $scope.showLoading = function() {
+ *     $ionicLoading.show(); //options default to values in $ionicLoadingConfig
+ *   };
+ * });
+ * ```
+ */
 IonicModule
+.constant('$ionicLoadingConfig', {
+  template: '<i class="ion-loading-d"></i>'
+})
 .factory('$ionicLoading', [
-  '$document',
+  '$ionicLoadingConfig',
+  '$ionicBody',
   '$ionicTemplateLoader',
   '$ionicBackdrop',
   '$timeout',
@@ -40,7 +66,7 @@ IonicModule
   '$log',
   '$compile',
   '$ionicPlatform',
-function($document, $ionicTemplateLoader, $ionicBackdrop, $timeout, $q, $log, $compile, $ionicPlatform) {
+function($ionicLoadingConfig, $ionicBody, $ionicTemplateLoader, $ionicBackdrop, $timeout, $q, $log, $compile, $ionicPlatform) {
 
   var loaderInstance;
   //default values
@@ -78,7 +104,7 @@ function($document, $ionicTemplateLoader, $ionicBackdrop, $timeout, $q, $log, $c
     if (!loaderInstance) {
       loaderInstance = $ionicTemplateLoader.compile({
         template: LOADING_TPL,
-        appendTo: $document[0].body
+        appendTo: $ionicBody.get()
       })
       .then(function(loader) {
         var self = loader;
@@ -109,18 +135,19 @@ function($document, $ionicTemplateLoader, $ionicBackdrop, $timeout, $q, $log, $c
 
           templatePromise.then(function(html) {
             if (html) {
-              self.element.html(html);
-              $compile(self.element.contents())(self.scope);
+              var loading = self.element.children();
+              loading.html(html);
+              $compile(loading.contents())(self.scope);
             }
 
             //Don't show until template changes
             if (self.isShown) {
               self.element.addClass('visible');
-              ionic.DomUtil.centerElementByMarginTwice(self.element[0]);
               ionic.requestAnimationFrame(function() {
-                self.isShown && self.element.addClass('active');
-                ionic.DomUtil.centerElementByMarginTwice(self.element[0]);
-                $document[0].body.classList.add('loading-active');
+                if(self.isShown) {
+                  self.element.addClass('active');
+                  $ionicBody.addClass('loading-active');
+                }
               });
             }
           });
@@ -134,7 +161,7 @@ function($document, $ionicTemplateLoader, $ionicBackdrop, $timeout, $q, $log, $c
               $ionicBackdrop.getElement().removeClass('backdrop-loading');
             }
             self.element.removeClass('active');
-            $document[0].body.classList.remove('loading-active');
+            $ionicBody.removeClass('loading-active');
             setTimeout(function() {
               !self.isShown && self.element.removeClass('visible');
             }, 200);
@@ -150,7 +177,7 @@ function($document, $ionicTemplateLoader, $ionicBackdrop, $timeout, $q, $log, $c
   }
 
   function showLoader(options) {
-    options || (options = {});
+    options = extend($ionicLoadingConfig || {}, options || {});
     var delay = options.delay || options.showDelay || 0;
 
     //If loading.show() was called previously, cancel it and show with our new options
