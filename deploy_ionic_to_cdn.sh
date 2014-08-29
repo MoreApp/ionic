@@ -7,6 +7,6 @@ if [ -z "$1" ]
 fi
 
 npm install
-./node_modules/.bin/gulp
+./node_modules/.bin/gulp --release
 mkdir -p $1
 cp -rf dist/* $1
