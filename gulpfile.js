@@ -184,7 +184,7 @@ gulp.task('scripts-ng', function() {
 });
 
 gulp.task('sass', function(done) {
-  gulp.src('scss/ionic.scss')
+  gulp.src('scss/ionic-more.scss')
     .pipe(header(banner))
     .pipe(sass({
       onError: function(err) {
